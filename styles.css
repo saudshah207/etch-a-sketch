@@ -12,17 +12,20 @@ body {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    margin: 0 0.5rem 0.5rem;
+    border: 1px solid #000000;
 }
 
 .square {
     aspect-ratio: 1;
-    background-color: rgb(0, 255, 0, 0.7);
-    width: calc((100% - (15 * 4px)) / 16);
-    min-width: 2rem;
+    width: calc(100% / var(--grid-squares-per-side));
     transition: background-color 0.3s ease;
 }
 
-.turn-to-red {
-    background-color: rgba(255, 0, 0, 0.7);
+.turn-to-black {
+    background-color: rgba(0, 0, 0, 1);
+}
+
+button.configure-squares {
+    margin: 1rem;
 }
