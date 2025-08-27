@@ -3,7 +3,8 @@ function setUpEtchASketch(
   squaresPerSide = 16
 ) {
   const divsAmountToCreate = squaresPerSide * squaresPerSide;
-  let isRandomColorsOn = false;
+  let isRandomColorsOn = false,
+    isProgressiveDarkeningOn = false;
 
   async function createDivs(divsCount) {
     let div, fragment;
@@ -32,23 +33,48 @@ function setUpEtchASketch(
   grid.addEventListener("mouseover", changeDivBg);
 
   function changeDivBg(event) {
-    const target = event.target;
+    const target = event.target,
+      turnedToBlack = target.dataset.turnedToBlack,
+      opacity = +target.style.opacity;
 
-    if (isRandomColorsOn && target.dataset.turnedToBlack)
-      delete target.dataset.turnedToBlack;
-
-    const turnedToBlack = target.dataset.turnedToBlack;
-
-    if (target.classList.contains("square") && !turnedToBlack) {
-      if (!isRandomColorsOn) {
-        target.dataset.turnedToBlack = true;
-        target.classList.add("turn-to-black");
-        target.style = "";
-
-        return;
+    if (target.classList.contains("square")) {
+      if (isProgressiveDarkeningOn) {
+        darkenByTenPercent();
+      } else {
+        completelyDarken();
       }
 
+      if (isRandomColorsOn) {
+        turnToRandomColor();
+      } else {
+        turnToBlack();
+      }
+    }
+
+    function turnToBlack() {
+      if (turnedToBlack) return;
+
+      target.classList.add("turn-to-black");
+      target.style.backgroundColor = "";
+      target.dataset.turnedToBlack = true;
+    }
+
+    function turnToRandomColor() {
       target.style.backgroundColor = getRandomColor(256);
+
+      if (turnedToBlack) {
+        delete target.dataset.turnedToBlack;
+        target.classList.remove("turn-to-black");
+      }
+    }
+
+    function darkenByTenPercent() {
+      if (opacity < 1) target.style.opacity = opacity + 0.1;
+    }
+
+    function completelyDarken() {
+      const computedOpacity = +getComputedStyle(target).opacity;
+      if (computedOpacity < 1) target.style.opacity = 1;
     }
   }
 
@@ -67,16 +93,18 @@ function setUpEtchASketch(
     } else console.log("user either cancelled or gave invalid input");
   }
 
-  function toggleRandomColors(toggle) {
-    isRandomColorsOn = isRandomColorsOn ? false : true;
+  function updateToggleText(toggle, OnOffBoolean, featureText) {
+    const toggleTextIndication = OnOffBoolean ? "Off" : "On";
 
-    function updateToggleText() {
-      const toggleTextIndication = isRandomColorsOn ? "Off" : "On";
+    toggle.textContent = `Turn ${toggleTextIndication} ${featureText}`;
+  }
 
-      toggle.textContent = `Turn ${toggleTextIndication} Random Colors`;
-    }
+  function toggleFeature(toggle, featureBoolean, featureText) {
+    featureBoolean = featureBoolean ? false : true;
 
-    updateToggleText();
+    updateToggleText(toggle, featureBoolean, featureText);
+
+    return featureBoolean;
   }
 
   function getRandomColor(exclusiveUpToNumber) {
@@ -111,11 +139,23 @@ function setUpEtchASketch(
         break;
 
       case "random-colors-toggle":
-        toggleRandomColors(event.target);
+        isRandomColorsOn = toggleFeature(
+          event.target,
+          isRandomColorsOn,
+          "Random Colors"
+        );
         break;
 
       case "reset":
         resetEtchASketch();
+        break;
+
+      case "progressive-darkening-toggle":
+        isProgressiveDarkeningOn = toggleFeature(
+          event.target,
+          isProgressiveDarkeningOn,
+          "Light to Dark Colors"
+        );
         break;
 
       default:
