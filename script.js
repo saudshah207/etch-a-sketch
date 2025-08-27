@@ -1,9 +1,12 @@
 function setUpEtchASketch(
   grid = document.querySelector(".container"),
   squaresPerSide = 16,
-  configureGridButton = document.querySelector(".configure-squares")
+  configureGridButton = document.querySelector(".configure-squares"),
+  randomColorsToggle = document.querySelector(".random-colors-toggle"),
+  resetButton = document.querySelector(".reset")
 ) {
   const divsAmountToCreate = squaresPerSide * squaresPerSide;
+  let isRandomColorsOn = false;
 
   async function createDivs(divsCount) {
     let div, fragment;
@@ -17,8 +20,6 @@ function setUpEtchASketch(
     }
 
     grid.append(fragment);
-
-    console.log("grid width x height is", grid.clientWidth, "x", grid.clientHeight);
   }
 
   createDivs(divsAmountToCreate);
@@ -34,13 +35,23 @@ function setUpEtchASketch(
   grid.addEventListener("mouseover", changeDivBg);
 
   function changeDivBg(event) {
-    const target = event.target,
-      turnedToBlack = target.dataset.turnedToBlack;
+    const target = event.target;
+
+    if (isRandomColorsOn && target.dataset.turnedToBlack)
+      delete target.dataset.turnedToBlack;
+
+    const turnedToBlack = target.dataset.turnedToBlack;
 
     if (target.classList.contains("square") && !turnedToBlack) {
-      target.dataset.turnedToBlack = true;
+      if (!isRandomColorsOn) {
+        target.dataset.turnedToBlack = true;
+        target.classList.add("turn-to-black");
+        target.style = "";
 
-      target.classList.add("turn-to-black");
+        return;
+      }
+
+      target.style.backgroundColor = getRandomColor(256);
     }
   }
 
@@ -49,27 +60,60 @@ function setUpEtchASketch(
   function askUserForGridSquaresPerSide() {
     const maxSquaresPerSide = 100;
 
-    let squaresPerSide;
     do {
       squaresPerSide = +prompt(
         `How many squares per side do you want? (max we can do is ${maxSquaresPerSide})`,
         "16"
       );
-      console.log(squaresPerSide);
     } while (squaresPerSide > maxSquaresPerSide);
 
     if (squaresPerSide) {
-      grid.remove();
-      grid = createGrid();
-      document.firstElementChild.style = `--grid-squares-per-side: ${squaresPerSide};`;
-
-      setUpEtchASketch(grid, squaresPerSide);
+      resetEtchASketch(squaresPerSide);
     } else console.log("user either cancelled or gave invalid input");
+  }
+
+  randomColorsToggle.addEventListener("click", toggleRandomColors);
+
+  function toggleRandomColors() {
+    isRandomColorsOn = isRandomColorsOn ? false : true;
+
+    function updateToggleText() {
+      const toggleTextIndication = isRandomColorsOn ? "Off" : "On";
+
+      randomColorsToggle.textContent = `Turn ${toggleTextIndication} Random Colors`;
+    }
+
+    updateToggleText();
+  }
+
+  function getRandomColor(exclusiveUpToNumber) {
+    function getRandomNumber(exclusiveUpTo) {
+      return Math.floor(Math.random() * exclusiveUpTo);
+    }
+
+    return `rgb(${getRandomNumber(exclusiveUpToNumber)},
+      ${getRandomNumber(exclusiveUpToNumber)},
+      ${getRandomNumber(exclusiveUpToNumber)})`;
+  }
+
+  resetButton.addEventListener("click", () => resetEtchASketch());
+
+  function resetEtchASketch(squaresPerSide = 16) {
+    grid.remove();
+    grid = createGrid();
+
+    grid.addEventListener("mouseover", changeDivBg);
+
+    document.firstElementChild.style = `--grid-squares-per-side: ${squaresPerSide};`;
+
+    createDivs(squaresPerSide * squaresPerSide);
   }
 }
 
 setUpEtchASketch(
   document.querySelector(".container"),
   16,
-  document.querySelector(".configure-squares")
+  document.querySelector(".configure-squares"),
+  document.querySelector(".random-colors-toggle"),
+  document.querySelector(".reset")
 );

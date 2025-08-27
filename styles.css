@@ -26,6 +26,6 @@ body {
     background-color: rgba(0, 0, 0, 1);
 }
 
-button.configure-squares {
+button {
     margin: 1rem;
 }
