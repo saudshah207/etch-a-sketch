@@ -1,9 +1,6 @@
 function setUpEtchASketch(
   grid = document.querySelector(".container"),
-  squaresPerSide = 16,
-  configureGridButton = document.querySelector(".configure-squares"),
-  randomColorsToggle = document.querySelector(".random-colors-toggle"),
-  resetButton = document.querySelector(".reset")
+  squaresPerSide = 16
 ) {
   const divsAmountToCreate = squaresPerSide * squaresPerSide;
   let isRandomColorsOn = false;
@@ -55,8 +52,6 @@ function setUpEtchASketch(
     }
   }
 
-  configureGridButton.addEventListener("click", askUserForGridSquaresPerSide);
-
   function askUserForGridSquaresPerSide() {
     const maxSquaresPerSide = 100;
 
@@ -72,15 +67,13 @@ function setUpEtchASketch(
     } else console.log("user either cancelled or gave invalid input");
   }
 
-  randomColorsToggle.addEventListener("click", toggleRandomColors);
-
-  function toggleRandomColors() {
+  function toggleRandomColors(toggle) {
     isRandomColorsOn = isRandomColorsOn ? false : true;
 
     function updateToggleText() {
       const toggleTextIndication = isRandomColorsOn ? "Off" : "On";
 
-      randomColorsToggle.textContent = `Turn ${toggleTextIndication} Random Colors`;
+      toggle.textContent = `Turn ${toggleTextIndication} Random Colors`;
     }
 
     updateToggleText();
@@ -96,8 +89,6 @@ function setUpEtchASketch(
       ${getRandomNumber(exclusiveUpToNumber)})`;
   }
 
-  resetButton.addEventListener("click", () => resetEtchASketch());
-
   function resetEtchASketch(squaresPerSide = 16) {
     grid.remove();
     grid = createGrid();
@@ -108,12 +99,28 @@ function setUpEtchASketch(
 
     createDivs(squaresPerSide * squaresPerSide);
   }
+
+  document.addEventListener("click", delegateClickEvent);
+
+  function delegateClickEvent(event) {
+    const buttonType = event.target.dataset.buttonType;
+
+    switch (buttonType) {
+      case "configure-squares":
+        askUserForGridSquaresPerSide();
+        break;
+
+      case "random-colors-toggle":
+        toggleRandomColors(event.target);
+        break;
+
+      case "reset":
+        resetEtchASketch();
+        break;
+
+      default:
+    }
+  }
 }
 
-setUpEtchASketch(
-  document.querySelector(".container"),
-  16,
-  document.querySelector(".configure-squares"),
-  document.querySelector(".random-colors-toggle"),
-  document.querySelector(".reset")
-);
+setUpEtchASketch(document.querySelector(".container"), 16);
